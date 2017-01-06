@@ -1,0 +1,22 @@
+--- Radiator-Locked-4.4/Radius/EAP_43.pm	2009-03-10 22:59:19.000000000 +0100
++++ Radiator-Locked-4.4-fast/Radius/EAP_43.pm	2010-04-19 21:02:45.105996396 +0200
+@@ -558,6 +558,9 @@
+ 		$self->eap_failure($p->{rp}, $context);
+ 		return ($main::REJECT, 'EAP-FAST end of Server-Unauthenticated Provisioning mode');
+ 	    }
++	    # Get the reply attributes from the inner auth
++	    $p->{rp}->{inner_identity} = $context->{inner_identity};
++	    $p->{rp}->add_attr_list($context->{last_reply_attrs});
+ 
+ 	    # Send the EAP success	
+ 	    $self->adjustReply($p);
+@@ -835,6 +838,9 @@
+ 	# This will be set by EAP.pm in the inner request if it was satisfied
+ 	# internally by Radiator. we can use this to set the I_ID later
+ 	$context->{inner_identity} = $tp->{EAPIdentity};
++        # Keep a copy of the all the reply attributes
++        $context->{last_reply_attrs} = Radius::AttrVal->new();
++        $context->{last_reply_attrs}->add_attr_list($tp->{rp});
+ 
+ 	# Now build reply TLVs
+ 	my $reply_tlv = Radius::EAP_43::TLV->new();
