@@ -130,7 +130,7 @@ AuthBy ....
 PostProcessingHook file:"%D/Hooks/cui_hook"
 </Handler>
 
-- when you act as an IdP: add PostAuthProcessingHook called cui_hook to each Handler which 
+- when you act as an IdP: add PostAuthHook called cui_hook to each Handler which 
 handles packets with TunnelledByPEAP=1, TunnelledByFAST=1 or 
 TunnelledByTTLS=1 
 (or add such a handler), e.g.
