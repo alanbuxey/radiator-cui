@@ -22,7 +22,9 @@ sub
 		$innerauth = $request->getUserName() unless defined $innerauth;
 	}
     }
-    $outerrequest = $request->{outerRequest};
+    if (defined($request->{outerRequest}) and (keys %{$request->{outerRequest}})) {
+      $outerrequest = $request->{outerRequest}
+    };
 
     my $client_addr;
     if ( $outerrequest ) 
@@ -48,7 +50,7 @@ sub
         {    
   	    my @cui = $request->get_attr('Chargeable-User-Identity');
 # nothing to do if CUI is set 
-  	    return if ( ($#cui == 0) && ($cui[0] ne "") ); 
+  	    return if ( ($#cui == 0) && (($cui[0] eq "") || ($cui[0] eq "\000")) ); 
   	    return if ($#cui < 0); 
 # get CUI value
   	    my $query = sprintf(&main::getVariable('CUIAcct_select'), $cuitable, $client_name, $request->get_attr('Calling-Station-Id'), $request->get_attr('User-Name'));
@@ -114,9 +116,9 @@ sub
      }
      my $cuisalt = &main::getVariable('CUI_salt');
      if ( $isopname && ($outerrequest || ($request->{EAPTypeName} eq "TLS") || ($request->{EAPTypeName} eq "PWD") ) &&
-          ($#cui==0) && ($cui[0] eq "") ) 
+          ($#cui==0) && (($cui[0] eq "") || ($cui[0] eq "\000")) )
      {
-      		$reply->add_attr('Chargeable-User-Identity', md5_hex($cuisalt.$user.$opname));
+      		$reply->add_attr('Chargeable-User-Identity', md5_hex($cuisalt.lc($user).$opname));
      }
      my @proxystate = $r->get_attr("Proxy-State");
      my  $cui = $reply->get_attr('Chargeable-User-Identity');
