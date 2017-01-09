@@ -5,21 +5,31 @@
 CUI_salt=ABcdEF
 # the flag to indicate that Operator-Name is required
 CUI_required_Operator_Name=1
+
 ###########################################################
 # SP settings
 ###########################################################
 # the Service Provider identifier
 CUI_Operator_Name=1umk.pl
-#
+
+CUI_accounting=1
+
 # Needed only when it is planned to use CUI in accounting
 # the temporary table
 CUITable=cui
+
 # query to select an appropriate CUI value on Accounting Start or Interim Update
 CUIAcct_select=SELECT cui FROM %s WHERE clientipaddress = '%s' AND callingstationid = '%s' AND username = '%s'
+
 # query to update lastaccounting Accounting Start or Interim Update
 CUIAcct_update=UPDATE %s SET lastaccounting = CURRENT_TIMESTAMP WHERE clientipaddress = '%s' AND callingstationid = '%s' AND username = '%s' AND cui = '%s'
+
 # query to delete the temorary record on Accounting Stop
 CUIAcct_delete=DELETE FROM %s WHERE clientipaddress = '%s' AND callingstationid = '%s' AND username = '%s' AND cui = '%s'
+
 # query to insert the new temporary record or update the existing one
 # on Access-Accept
 CUIAcct_insert=INSERT IGNORE INTO %s (clientipaddress, callingstationid, username, cui, lastaccounting) values ('%s', '%s', '%s', '%s', NULL) ON DUPLICATE KEY UPDATE lastaccounting='0000-00-00 00:00:00', cui='%s'
+
+# query to delete forgotten old records
+CUIAcct_del_expired=DELETE FROM cui WHERE creationdate < DATE_SUB(NOW(), INTERVAL 2 DAY);
