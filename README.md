@@ -65,7 +65,6 @@ Other variables set CUI environment for SP side:
 MySQL script for creating the temporary database, needed only once
 when it is planned to use CUI in accounting.
 
-
 ## CUI.pm
 
 This file is loaded during Radiator startup. Later it is being used
@@ -95,6 +94,10 @@ As the PreProcessingHook for Accounting-Request of SP side it checks
 for a matching record in the temporary CUI table and, if found, adds
 the appropriate CUI value to the packet and updates the temporary
 record with last accounting time.
+
+## EAP_43.patch
+
+No longer needed, remains as refrerence.
 
 # CONFIGURATION
 
