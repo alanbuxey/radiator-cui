@@ -80,15 +80,6 @@ PostAuthHook.
   the appropriate CUI value to the packet and updates the temporary record
   with last accounting time.
 
-
-Hooks/cui_attr_hook
-~~~~~~~~~~~~~~~~~~~
-This hook should be called for each proxied request (SP side). 
-If a CUI attribute is not present in an Access-Request, then the hook adds 
-the CUI attribute with the NUL value and the Operator-Name attribute with
-the value definded in CUI_Operator_Name.
-
-
 CONFIGURATION
 
 1. Modify cui.cfg and set appropriate username and password for the
@@ -108,10 +99,10 @@ CONFIGURATION
 
 include %D/cui.cfg
 
-- when you act as a SP: add PreProcessingHook called cui_attr_hook to each Handler 
-or Realm section which proxies request to another server
+- when you act as a SP: add to each Handler or Realm section which proxies request to another server
 
-PreProcessingHook file:"%D/Hooks/cui_attr_hook"
+AddToRequestIfNotExist  Operator-Name="1realm.tld"
+AddToRequest            Chargeable-User-Identity=\000
 
 - when you act as a SP and you plan to use CIU in accounting: add 
 PreProcessingHook called cui_hook to each Handler section,
