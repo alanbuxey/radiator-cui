@@ -146,32 +146,41 @@ sub add
     return;
 };
 
-# Configurable variables
-my $filename;
-if ($filename = &main::getVariable('CUIDefsFilename'))
-{
-    $filename = &Radius::Util::format_special($filename);
-}
-else
-{
-    $filename = '/etc/radiator/cui_definitions_file';
-}
-
-open(FILE, $filename) ||
-    (&main::log($main::LOG_ERR, "Could not open $filename")
-     && return);
-my $record;
-while (<FILE>)
-{
-    s/\\\n//g;
-    next if /^#/ || /^\s*$/;
-    chomp($record = $_);
-    my @el = split('=',$record,2);
-    if ( $#el == 1 ) {
-	&main::setVariable($el[0], $el[1]);
-    }
+sub delete_expired {
+    my $authby_handle = Radius::AuthGeneric::find('CUI');
+    my $cuiacct = &main::getVariable('CUI_accounting');
+    if ($authby_handle && $cuiacct) {
+	my $query = &main::getVariable('CUIAcct_del_expired');
+	$authby_handle->do($query);
+    };
 };
 
+sub init {
+    # Configurable variables
+    my $filename;
+    if ($filename = &main::getVariable('CUIDefsFilename')) {
+	$filename = &Radius::Util::format_special($filename);
+    } else {
+	$filename = '/etc/radiator/cui_definitions_file';
+    }
+
+    open(FILE, $filename) ||
+	(&main::log($main::LOG_ERR, "Could not open $filename")
+	 && return);
+    my $record;
+    while (<FILE>) {
+	s/\\\n//g;
+	next if /^#/ || /^\s*$/;
+	chomp($record = $_);
+	my @el = split('=',$record,2);
+	if ( $#el == 1 ) {
+	    &main::setVariable($el[0], $el[1]);
+	}
+    };
+};
+
+init;
+delete_expired;
 &main::log($main::LOG_DEBUG, "CUI: Hopefuly initialized");
 
 1;
