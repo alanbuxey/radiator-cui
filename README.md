@@ -51,14 +51,9 @@ cui_sql_def
   to use CUI in accounting.
 
 
-Hooks/Startup_cui
-~~~~~~~~~~~~~~~~~~
- This file initalises global variables used by CUI.
-
-
-Hooks/cui_hook
+Hooks/CUI.pm
 ~~~~~~~~~~~~~~~
-This file is referenced by as PreProcessingHook, PostProcessingHook and 
+This file is referenced by as StartupHook, PreProcessingHook, PostProcessingHook and 
 PostAuthHook.
 
 - As the PostProcessingHook it is called by IdP or SP side for each 
@@ -85,16 +80,20 @@ CONFIGURATION
 1. Modify cui.cfg and set appropriate username and password for the
    database you plan to use.
 
-2. Modify cui_definitions_file:
+2. Load CUI.pm during Radiator startup:
+
+   StartupHook	sub { require "/etc/radiator/Maja_CUI.pm"; };
+
+3. Modify cui_definitions_file:
  - set CUI_salt to some "random" string,
  - set CUI_Operator_Name to one of your registered DNS domain names.
  - set CUI_required_Operator_Name flag when Operator-Name is required 
    (default - not required)
 
-3. Create a database if it is planned to use CUI in accounting - use the 
+4. Create a database if it is planned to use CUI in accounting - use the 
    cui_sql_def MySQL script.
 
-4. Make the following modifications of the radius.cfg file:
+5. Make the following modifications of the radius.cfg file:
 - include cui.cfg by adding the line
 
 include %D/cui.cfg
@@ -105,37 +104,37 @@ AddToRequestIfNotExist  Operator-Name="1realm.tld"
 AddToRequest            Chargeable-User-Identity=\000
 
 - when you act as a SP and you plan to use CIU in accounting: add 
-PreProcessingHook called cui_hook to each Handler section,
+call to CUI::add in PreProcessingHook to each Handler section,
 which matches Accounting-Request e.g.
 
 <Handler Request-Type = Accounting-Request>
 AuthBy AccountingResponse
-PreProcessingHook file:"%D/Hooks/cui_hook"
+PreProcessingHook sub { CUI::add(@_); };
 </Handler>
 
-- when you act as an IdP: add PostProcessingHook called cui_hook to each 
+- when you act as an IdP: add call to CUI::add in PostProcessingHook to each 
 Handler or Realm section which handles request locally and should support CUI e.g.
 
 <Handler Realm=eduroam.umk.pl>
 AuthBy ....
-PostProcessingHook file:"%D/Hooks/cui_hook"
+PostProcessingHook sub { CUI::add(@_); };
 </Handler>
 
-- when you act as an IdP: add PostAuthHook called cui_hook to each Handler which 
+- when you act as an IdP: add call to CUI::add in PostAuthHook to each Handler which 
 handles packets with TunnelledByPEAP=1, TunnelledByFAST=1 or 
 TunnelledByTTLS=1 
 (or add such a handler), e.g.
 
 <Handler TunnelledByPEAP=1 >
 AuthBy ...
-PostAuthHook file:"%D/Hooks/cui_hook"
+PostAuthHook sub { CUI::add(@_); };
 </Handler>
 <Handler TunnelledByTTLS=1 >
 AuthBy ...
-PostAuthHook file:"%D/Hooks/cui_hook"
+PostAuthHook sub { CUI::add(@_); };
 </Handler>
 <Handler TunnelledByFAST=1 >
 AuthBy ...
-PostAuthHook file:"%D/Hooks/cui_hook"
+PostAuthHook sub { CUI::add(@_); };
 </Handler>
 

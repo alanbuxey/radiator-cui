@@ -1,14 +1,21 @@
+package CUI;
+
+use strict;
 use Digest::MD5 qw(md5_hex);
 use Radius::Util qw(inet_ntop);
 use POSIX;
 use Time::Local;
+use Data::Dumper;
 
-sub
+sub add
 {
 # this code act as PostProcessinigHook 
     my $request;
     my $reply;
     my $outerrequest;
+
+#    &main::log($main::LOG_DEBUG, "CUI: byl jsem tady");
+
 # PostProcessinigHook handling Access-Accept (IdP)
     $request = ${$_[0]};
     $reply = ${$_[1]};
@@ -45,13 +52,12 @@ sub
     my $cuitable = &main::getVariable('CUITable');
     if ($authby_handle && $cuiacct) {
         my $cuiacct_select = &main::getVariable('CUIAcct_select');
-
         if ($request->code eq 'Accounting-Request') 
         {    
   	    my @cui = $request->get_attr('Chargeable-User-Identity');
 # nothing to do if CUI is set 
-  	    return if ( ($#cui == 0) && (($cui[0] eq "") || ($cui[0] eq "\000")) ); 
-  	    return if ($#cui < 0); 
+  	    return if ( ($#cui == 0) && (length($cui[0]) > 1) );
+  	    #SEMIK ??? return if ($#cui < 0);
 # get CUI value
   	    my $query = sprintf(&main::getVariable('CUIAcct_select'), $cuitable, $client_name, $request->get_attr('Calling-Station-Id'), $request->get_attr('User-Name'));
   	    my $sth = $authby_handle->prepareAndExecute($query);
@@ -101,6 +107,7 @@ sub
      {
      	$user = $request->get_attr('User-Name');
      }
+
      my $opname = $r->get_attr('Operator-Name');
      my $isopname = 1;
      if ( !$opname ) 
@@ -116,12 +123,13 @@ sub
      }
      my $cuisalt = &main::getVariable('CUI_salt');
      if ( $isopname && ($outerrequest || ($request->{EAPTypeName} eq "TLS") || ($request->{EAPTypeName} eq "PWD") ) &&
-          ($#cui==0) && (($cui[0] eq "") || ($cui[0] eq "\000")) )
+          ($#cui==0) && (length($cui[0]) <= 1) ) 
      {
       		$reply->add_attr('Chargeable-User-Identity', md5_hex($cuisalt.lc($user).$opname));
      }
      my @proxystate = $r->get_attr("Proxy-State");
      my  $cui = $reply->get_attr('Chargeable-User-Identity');
+
      if ( ($#proxystate==-1) && $cui && $authby_handle ) 
      {
       if ( $cuiacct && $cui ) 
@@ -129,10 +137,41 @@ sub
 # update the cui table
         my $csid = $r->get_attr('Calling-Station-Id');
         my $user = $r->get_attr('User-Name');
-        my $query = sprintf(&main::getVariable('CUI_insert'), $cuitable, $client_name, $csid, $user, $cui, $cui);
+        my $query = sprintf(&main::getVariable('CUIAcct_insert'), $cuitable, $client_name, $csid, $user, $cui, $cui);
+	#&main::log($main::LOG_DEBUG, "CUI: query=$query");
         my $sth = $authby_handle->prepareAndExecute($query);
       }
      }
     }
     return;
+};
+
+# Configurable variables
+my $filename;
+if ($filename = &main::getVariable('CUIDefsFilename'))
+{
+    $filename = &Radius::Util::format_special($filename);
 }
+else
+{
+    $filename = '/etc/radiator/cui_definitions_file';
+}
+
+open(FILE, $filename) ||
+    (&main::log($main::LOG_ERR, "Could not open $filename")
+     && return);
+my $record;
+while (<FILE>)
+{
+    s/\\\n//g;
+    next if /^#/ || /^\s*$/;
+    chomp($record = $_);
+    my @el = split('=',$record,2);
+    if ( $#el == 1 ) {
+	&main::setVariable($el[0], $el[1]);
+    }
+};
+
+&main::log($main::LOG_DEBUG, "CUI: Hopefuly initialized");
+
+1;
