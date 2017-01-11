@@ -1,11 +1,11 @@
 package CUI;
 
-# Originaly writen by Maja Wolniewicz <mgw@umk.pl> during GN3+ project
+# Originally writen by Maja Wolniewicz <mgw@umk.pl> during GN3+ project
 # (2013-2015) under The GÉANT Project. Later mantained by Jan Tomášek
 # <jan.tomasek@cesnet.cz> from CESNET.
 
 use strict;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA1 qw(sha1_hex);
 use Radius::Util qw(inet_ntop);
 use POSIX;
 use Time::Local;
@@ -105,7 +105,7 @@ sub add {
 	my $cuisalt = &main::getVariable('CUI_salt');
 	if ( $isopname && ($outerrequest || ($request->{EAPTypeName} eq "TLS") || ($request->{EAPTypeName} eq "PWD") ) &&
 	     ($#cui==0) && (length($cui[0]) <= 1) ) {
-	    $reply->add_attr('Chargeable-User-Identity', md5_hex($cuisalt.lc($user).$opname));
+	    $reply->add_attr('Chargeable-User-Identity', sha1_hex($cuisalt.lc($user).$opname));
 	}
 	my @proxystate = $r->get_attr("Proxy-State");
 	my  $cui = $reply->get_attr('Chargeable-User-Identity');
