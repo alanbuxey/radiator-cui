@@ -1,5 +1,9 @@
 package CUI;
 
+# Originaly writen by Maja Wolniewicz <mgw@umk.pl> during GN3+ project
+# (2013-2015) under The GÉANT Project. Later mantained by Jan Tomášek
+# <jan.tomasek@cesnet.cz> from CESNET.
+
 use strict;
 use Digest::MD5 qw(md5_hex);
 use Radius::Util qw(inet_ntop);
