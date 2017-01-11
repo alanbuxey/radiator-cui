@@ -1,8 +1,9 @@
 ###########################################################
 # IdP settings
 ###########################################################
-# the salt value used when the md5 hash is created 
-CUI_salt=ABcdEF
+# the salt value used when the SHA1 hash is created
+CUI_salt=PLEASE_CHANGE_ME_TO_SOMETHING_SECRET_AND_UNIQUE!
+
 # the flag to indicate that Operator-Name is required
 CUI_required_Operator_Name=1
 
