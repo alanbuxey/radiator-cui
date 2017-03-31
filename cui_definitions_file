@@ -7,6 +7,13 @@ CUI_salt=PLEASE_CHANGE_ME_TO_SOMETHING_SECRET_AND_UNIQUE!
 # the flag to indicate that Operator-Name is required
 CUI_required_Operator_Name=1
 
+# regular expresion fragments to fix multiple realms if org is using them
+# $username =~ s/$CUI_user_rewrite1/$CUI_user_rewrite2/ei
+
+CUI_user_rewrite1=@example\.eu$
+CUI_user_rewrite2=@example.cz
+
+
 ###########################################################
 # SP settings
 ###########################################################

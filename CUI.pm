@@ -11,6 +11,20 @@ use POSIX;
 use Time::Local;
 use Data::Dumper;
 
+sub countCUI {
+  my $salt = shift;
+  my $opname = shift;
+  my $user = shift;
+
+  my $rewrite1 = &main::getVariable('CUI_user_rewrite1') || '';
+  my $rewrite2 = &main::getVariable('CUI_user_rewrite2') || '';
+  if (($rewrite1) and ($rewrite2)) {
+    $user =~ s/$rewrite1/$rewrite2/ei;
+  };
+
+  return sha1_base64($salt.$user.$opname);
+};
+
 sub add {
     # this code act as PostProcessinigHook 
     my $request;
@@ -105,7 +119,7 @@ sub add {
 	my $cuisalt = &main::getVariable('CUI_salt');
 	if ( $isopname && ($outerrequest || ($request->{EAPTypeName} eq "TLS") || ($request->{EAPTypeName} eq "PWD") ) &&
 	     ($#cui==0) && (length($cui[0]) <= 1) ) {
-	    $reply->add_attr('Chargeable-User-Identity', sha1_base64($cuisalt.lc($user).$opname));
+	    $reply->add_attr('Chargeable-User-Identity', countCUI($cuisalt, $opname, lc($user)));
 	}
 	my @proxystate = $r->get_attr("Proxy-State");
 	my  $cui = $reply->get_attr('Chargeable-User-Identity');
@@ -142,7 +156,6 @@ sub init {
     } else {
 	$filename = '/etc/radiator/cui_definitions_file';
     }
-
     open(FILE, $filename) ||
 	(&main::log($main::LOG_ERR, "Could not open $filename")
 	 && return);
