@@ -40,4 +40,4 @@ CUIAcct_delete=DELETE FROM %s WHERE clientipaddress = '%s' AND callingstationid 
 CUIAcct_insert=INSERT IGNORE INTO %s (clientipaddress, callingstationid, username, cui, lastaccounting) values ('%s', '%s', '%s', '%s', NULL) ON DUPLICATE KEY UPDATE lastaccounting='0000-00-00 00:00:00', cui='%s'
 
 # query to delete forgotten old records
-CUIAcct_del_expired=DELETE FROM cui WHERE creationdate < DATE_SUB(NOW(), INTERVAL 2 DAY);
+CUIAcct_del_expired=DELETE FROM %s WHERE creationdate < DATE_SUB(NOW(), INTERVAL 2 DAY);

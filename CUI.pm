@@ -143,7 +143,7 @@ sub delete_expired {
     my $authby_handle = Radius::AuthGeneric::find('CUI');
     my $cuiacct = &main::getVariable('CUI_accounting');
     if ($authby_handle && $cuiacct) {
-	my $query = &main::getVariable('CUIAcct_del_expired');
+	my $query = sprintf(&main::getVariable('CUIAcct_del_expired'), $cuitable);
 	$authby_handle->do($query);
     };
 };
