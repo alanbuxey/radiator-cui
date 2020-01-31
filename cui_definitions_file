@@ -1,10 +1,18 @@
 ###########################################################
 # IdP settings
 ###########################################################
-# the salt value used when the md5 hash is created 
-CUI_salt=ABcdEF
+# the salt value used when the SHA1 hash is created
+CUI_salt=PLEASE_CHANGE_ME_TO_SOMETHING_SECRET_AND_UNIQUE!
+
 # the flag to indicate that Operator-Name is required
 CUI_required_Operator_Name=1
+
+# regular expresion fragments to fix multiple realms if org is using them
+# $username =~ s/$CUI_user_rewrite1/$CUI_user_rewrite2/ei
+
+CUI_user_rewrite1=@example\.eu$
+CUI_user_rewrite2=@example.cz
+
 
 ###########################################################
 # SP settings
@@ -32,4 +40,4 @@ CUIAcct_delete=DELETE FROM %s WHERE clientipaddress = '%s' AND callingstationid 
 CUIAcct_insert=INSERT IGNORE INTO %s (clientipaddress, callingstationid, username, cui, lastaccounting) values ('%s', '%s', '%s', '%s', NULL) ON DUPLICATE KEY UPDATE lastaccounting='0000-00-00 00:00:00', cui='%s'
 
 # query to delete forgotten old records
-CUIAcct_del_expired=DELETE FROM cui WHERE creationdate < DATE_SUB(NOW(), INTERVAL 2 DAY);
+CUIAcct_del_expired=DELETE FROM %s WHERE creationdate < DATE_SUB(NOW(), INTERVAL 2 DAY);

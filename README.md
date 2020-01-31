@@ -8,7 +8,7 @@ The CUI support includes:
   attribute). In eduroam it is required that the CUI request also
   contains an Operator-Name (RFC 5580) attribute. This implementation
   allows for turning on this requirement. The CUI value is computed as
-  an MD5 hash of concatenated (inner) User-Name, optional
+  a SHA1 hash of concatenated (inner) User-Name, optional
   Operator-Name and a local salt value.
 
 - SP side (requesting CUI) - an eduroam service provider can send CUI
@@ -17,10 +17,10 @@ The CUI support includes:
   also contains the Operator-Name attribute, this implementation
   allows for turning this behaviour on.
 
-- The CUI support for Radiator was originaly implemented by Maja
+- The CUI support for Radiator was originally implemented by Maja
   Wolniewicz <mgw@umk.pl>
 
-- Implementation is splited into several files described as follows
+- Implementation is split into several files described as follows
   
 ## cui.cfg
 
@@ -40,7 +40,7 @@ contains global variables needed by CUI implementation for Radiator.
 
 Two variables decide how CUI is supported by an IdP side:
 
-* CUI_salt - defines the salt value used when the md5 hash is created
+* CUI_salt - defines the salt value used when the SHA1 hash is created
   - if this is not set then CUI support for the IdP side is turned
   off.
 
@@ -75,7 +75,7 @@ within PreProcessingHook, PostProcessingHook and PostAuthHook.
 As the it PostProcessingHook is called by IdP or SP side for each
 Access-Request after all authentication methods have been called and
 before the reply is sent back. It adjusts Access-Accept reply. If CUI
-is supported, it creates the md5 hash from the User-Name and the local
+is supported, it creates the SHA1 hash from the User-Name and the local
 salt, places it as the CUI value in the reply packet and inserts the
 appropriate record with this CUI value to the temporary table.
 
@@ -83,7 +83,7 @@ appropriate record with this CUI value to the temporary table.
 
 As the PostAuthHook it is called by IdP side for each request after it
 has been passed to all the AuthBy clauses. It adjusts Access-Accept
-reply. If CUI is supported, it creates the md5 hash from the User-Name
+reply. If CUI is supported, it creates the SHA1 hash from the User-Name
 and the local salt, places it as the CUI value in the reply packet and
 inserts the appropriate record with this CUI value to the temporary
 table.

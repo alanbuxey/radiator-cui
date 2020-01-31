@@ -1,15 +1,29 @@
 package CUI;
 
-# Originaly writen by Maja Wolniewicz <mgw@umk.pl> during GN3+ project
+# Originally writen by Maja Wolniewicz <mgw@umk.pl> during GN3+ project
 # (2013-2015) under The GÉANT Project. Later mantained by Jan Tomášek
 # <jan.tomasek@cesnet.cz> from CESNET.
 
 use strict;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha1_base64);
 use Radius::Util qw(inet_ntop);
 use POSIX;
 use Time::Local;
 use Data::Dumper;
+
+sub countCUI {
+  my $salt = shift;
+  my $opname = shift;
+  my $user = shift;
+
+  my $rewrite1 = &main::getVariable('CUI_user_rewrite1') || '';
+  my $rewrite2 = &main::getVariable('CUI_user_rewrite2') || '';
+  if (($rewrite1) and ($rewrite2)) {
+    $user =~ s/$rewrite1/$rewrite2/ei;
+  };
+
+  return sha1_base64($salt.$user.$opname);
+};
 
 sub add {
     # this code act as PostProcessinigHook 
@@ -105,7 +119,7 @@ sub add {
 	my $cuisalt = &main::getVariable('CUI_salt');
 	if ( $isopname && ($outerrequest || ($request->{EAPTypeName} eq "TLS") || ($request->{EAPTypeName} eq "PWD") ) &&
 	     ($#cui==0) && (length($cui[0]) <= 1) ) {
-	    $reply->add_attr('Chargeable-User-Identity', md5_hex($cuisalt.lc($user).$opname));
+	    $reply->add_attr('Chargeable-User-Identity', countCUI($cuisalt, $opname, lc($user)));
 	}
 	my @proxystate = $r->get_attr("Proxy-State");
 	my  $cui = $reply->get_attr('Chargeable-User-Identity');
@@ -129,7 +143,7 @@ sub delete_expired {
     my $authby_handle = Radius::AuthGeneric::find('CUI');
     my $cuiacct = &main::getVariable('CUI_accounting');
     if ($authby_handle && $cuiacct) {
-	my $query = &main::getVariable('CUIAcct_del_expired');
+	my $query = sprintf(&main::getVariable('CUIAcct_del_expired'), $cuitable);
 	$authby_handle->do($query);
     };
 };
@@ -142,7 +156,6 @@ sub init {
     } else {
 	$filename = '/etc/radiator/cui_definitions_file';
     }
-
     open(FILE, $filename) ||
 	(&main::log($main::LOG_ERR, "Could not open $filename")
 	 && return);
